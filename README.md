@@ -1,122 +1,89 @@
-# 🛒 Store Sales Time Series Forecasting
+# Store Sales Forecasting Using Historical Retail Data
 
-A beginner-friendly time series forecasting project that predicts future store sales from historical data using a **Random Forest Regressor**. It captures sales trends and seasonality and accounts for holidays, events, oil prices, promotions, and store information.
+Forecasting daily store-level sales for the Kaggle
+[Store Sales – Time Series Forecasting](https://www.kaggle.com/competitions/store-sales-time-series-forecasting)
+dataset using a Random Forest model. Built as a Foundations of Data Science project (Version 1: a clean, beginner-friendly baseline).
 
-Built in **Google Colab** with Python, Pandas, Matplotlib, Seaborn, and Scikit-learn.
+## Project Overview
 
----
+The script loads the raw retail data, checks and cleans it, engineers time/holiday/store/lag features, explores the data with charts, trains a Random Forest, compares it with a simple baseline, and produces a forecast for the dates in `test.csv`.
 
-## 📌 Problem Statement
+## Dataset
 
-Develop a time series forecasting model that predicts future sales for stores based on historical sales data. The model should identify sales patterns and trends over time and consider factors such as holidays, events, store information, and other influencing factors.
+Download from Kaggle (not included in this repo): <https://www.kaggle.com/competitions/store-sales-time-series-forecasting/data>
 
-## 📂 Dataset
-
-Kaggle competition: [Store Sales - Time Series Forecasting](https://www.kaggle.com/competitions/store-sales-time-series-forecasting) (Corporación Favorita, Ecuador).
-
-| File | Description |
-|------|-------------|
-| `train.csv` | Daily sales per store and product family, with promotions |
+| File | Used for |
+|------|----------|
+| `train.csv` | Historical sales (required) |
+| `stores.csv` | Store city, state, type, cluster (required) |
 | `test.csv` | Future dates to forecast |
-| `stores.csv` | Store city, state, type, and cluster |
-| `oil.csv` | Daily oil prices |
-| `holidays_events.csv` | National/regional/local holidays and events |
-| `transactions.csv` | Daily transactions per store |
+| `oil.csv` | Daily oil price (economic factor) |
+| `holidays_events.csv` | National / regional / local holidays and events |
+| `transactions.csv` | Loaded, not used as a model feature |
 
-> The dataset is **not included** in this repo. Download it from Kaggle (link above).
+The script finds these files automatically (or asks for the zip in Google Colab).
 
-## 🔄 Project Workflow
+## Approach
 
-1. Import libraries
-2. Load dataset (auto-detects files in Colab, extracts the zip if needed)
-3. Data understanding
-4. Data cleaning (datetime conversion, duplicates, missing oil prices, transferred holidays)
-5. Feature engineering (year, month, day, day of week, week of year, weekend, holiday/event flags, label encoding)
-6. Exploratory data analysis
-   - Sales trend over time
-   - Monthly and weekday patterns
-   - Sales by store and store type
-   - Effect of holidays and events
-   - Correlation heatmap
-7. Model building (chronological split, last 90 days as test set)
-8. Model evaluation (MAE, MSE, RMSE, R²)
-9. Actual vs predicted sales
-10. Future sales forecast
-11. Final results tables
+1. **Load** – auto-detects CSV files and standardises column names
+2. **Data quality check** – missing values, duplicates, invalid dates/values, train/test compatibility
+3. **Cleaning** – fixes only what is actually wrong; aggregates product-level rows to one row per store per day; removes days before a store opened or when it was closed
+4. **Feature engineering**
+   - Calendar: year, month, day, day of week, week of year, quarter, weekend, month start/end
+   - Holidays: national, regional, local, and special events (transferred holidays ignored)
+   - Store: city, state, type, cluster; oil price; promotions
+   - Lag features: sales from `HORIZON` days earlier and a 28-day rolling average, so they are available for the forecast period without leakage
+5. **EDA** – sales trend, monthly trend, sales by store, distribution, day-of-week, holiday vs non-holiday, top stores, correlation heatmap
+6. **Chronological train/test split** – the last 90 days are held out (no shuffling)
+7. **Model** – `RandomForestRegressor` (200 trees, max depth 20)
+8. **Evaluation** – MAE, MSE, RMSE, R², compared with a baseline ("same as `HORIZON` days ago")
+9. **Forecast** – retrains on all history and predicts the dates in `test.csv`
 
-## 🧠 Model
+## Results
 
-- **Algorithm:** Random Forest Regressor (`n_estimators=100`, `max_depth=15`, `min_samples_leaf=2`)
-- **Split:** Chronological, not random, so the model never sees the future during training
-- **Target:** Daily sales per store
+> Fill this table in after running the script on your data. Do not copy numbers from anywhere else.
 
-## 📊 Results
+| Model | MAE | RMSE | R² |
+|-------|-----|------|----|
+| Baseline (sales `HORIZON` days earlier) | | | |
+| Random Forest Regressor | | | |
 
-Fill these in after running the notebook:
+Add your key charts to an `images/` folder and link them here, e.g. `![Actual vs Predicted](images/actual_vs_predicted.png)`.
 
-| Metric | Value |
-|--------|-------|
-| MAE | _your value_ |
-| MSE | _your value_ |
-| RMSE | _your value_ |
-| R² Score | _your value_ |
+## How to Run
 
-Add screenshots of your graphs to an `images/` folder and link them here:
+**Google Colab (easiest)**
+1. Upload `store_sales_forecasting.py` content into a notebook (or upload the file and run `%run store_sales_forecasting.py`)
+2. Run it and upload the Kaggle dataset zip when prompted
 
-```markdown
-![Sales Trend](images/sales_trend.png)
-![Actual vs Predicted](images/actual_vs_predicted.png)
-![Forecast](images/forecast.png)
-```
-
-## 🚀 How to Run
-
-**Option 1: Google Colab (recommended)**
-1. Open `store_sales_forecasting.ipynb` in Google Colab.
-2. Upload the dataset zip (or the CSV files) to the Colab session.
-3. Run all cells (`Runtime → Run all`). The code detects the files automatically.
-
-**Option 2: Locally**
+**Locally**
 ```bash
-git clone https://github.com/<your-username>/store-sales-forecasting.git
-cd store-sales-forecasting
+git clone https://github.com/<your-username>/<your-repo>.git
+cd <your-repo>
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
-jupyter notebook
+# put the Kaggle CSV files (or the zip) in this folder, then:
+python3 store_sales_forecasting.py
 ```
-Place the dataset CSVs in a `data/` folder and update the path in the loading section if needed. The Colab-only upload code can be skipped.
+Charts open in windows when run locally; running inside Jupyter/Colab shows them inline.
 
-## 🗂️ Repository Structure
+## Output
 
-```
-store-sales-forecasting/
-├── store_sales_forecasting.ipynb   # Main notebook with code and outputs
-├── requirements.txt
-├── README.md
-├── LICENSE
-├── .gitignore
-└── images/                         # Graph screenshots for the README
-```
+- Charts and metric tables printed during the run
+- `future_sales_forecast.csv` – predicted sales per store per forecast date
 
-## 🔮 Future Improvements
+## Limitations and Future Work (Version 2)
 
-- Add lag and rolling-mean features
-- Try XGBoost / LightGBM
-- Compare with Prophet or ARIMA
-- Forecast per product family
-- Hyperparameter tuning with time series cross-validation
+- Forecasts at store level, not product-family level
+- Only a few years of history for seasonality
+- Try Gradient Boosting models (e.g. XGBoost / LightGBM) and hyperparameter tuning
+- Add more lag/rolling features and cross-validation for time series
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-Python · Pandas · NumPy · Matplotlib · Seaborn · Scikit-learn · Google Colab
+Python, pandas, NumPy, matplotlib, seaborn, scikit-learn
 
-## 👩‍💻 Author
+## Author
 
-**Lalithanjali**
-B.Tech Computer Science Engineering (Data Science), GITAM Deemed University, Visakhapatnam
-
-- GitHub: [@your-username](https://github.com/your-username)
-- LinkedIn: _add your link_
-
-## 📄 License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+Lalithanjali – B.Tech CSE (Data Science), GITAM Deemed University, Visakhapatnam
