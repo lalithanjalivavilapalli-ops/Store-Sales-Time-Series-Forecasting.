@@ -114,7 +114,7 @@ Python · Pandas · NumPy · Matplotlib · Seaborn · Scikit-learn · Google Col
 **Lalithanjali**
 B.Tech Computer Science Engineering (Data Science), GITAM Deemed University, Visakhapatnam
 
-- GitHub: [@your-username](https://github.com/your-username)
+- GitHub: [[@lalithanjalivavilapalli-ops](https://github.com/your-username](https://github.com/lalithanjalivavilapalli-ops))
 - LinkedIn: _add your link_
 
 ## 📄 License
